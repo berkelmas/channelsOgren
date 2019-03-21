@@ -19,12 +19,34 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        var message = data['message'];
-        document.querySelector('#chat-log').value += (message + '\n');
+        //var message = data['message'];
+        //document.querySelector('#chat-log').value += (message + '\n');
+
+        if (data['message']) {
+            let message = data['message'];
+            document.querySelector('#chat-log').value += (message + '\n');
+        } else if (data['messages']) {
+            let messages = data['messages'];
+            messages.map(e => document.querySelector('#chat-log').value += (e.content + '\n'))
+
+            //document.querySelector('#chat-log').value += (message + '\n')
+        }
     };
 
     chatSocket.onclose = function(e) {
         console.error('Chat Socket KAPANDI...');
+    };
+
+
+    // fetchMessages metodumuz ile; veritabanımızda geçmiş kayıtlı mesajlarımızı chat odasına alıyoruz...
+    fetchMessages = function() {
+        chatSocket.send(JSON.stringify({
+            'command' : 'fetch_messages'
+        }))
+    };
+
+    chatSocket.onopen = function(e) {
+        fetchMessages();
     };
 
     document.querySelector('#chat-message-input').focus();
@@ -34,11 +56,14 @@
         }
     };
 
+
+    // Burada yeni mesaj gönderme işlemini gerçekleştiriyoruz.
     document.querySelector('#chat-message-submit').onclick = function(e) {
         var messageInputDom = document.querySelector('#chat-message-input');
         var message = messageInputDom.value;
         chatSocket.send(JSON.stringify({
-            'message': message
+            'message': message,
+            'command': 'new_message'
         }));
 
         messageInputDom.value = '';
