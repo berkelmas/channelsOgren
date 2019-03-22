@@ -3,18 +3,26 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 import json
 
+from django.contrib.auth.models import User
 from .models import Message
 
 class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):     ## Burada daha önceki gemiş 10 mesajımızı kullanıcıya getireceğiz.
-        messages = Message.objects.order_by('-timestamp').all()[:10]    ## DB'den ilk 10 mesjaı alıyoruz.
+        messages = Message.objects.order_by('-timestamp').all()[:10][::-1]    ## DB'den ilk 10 mesjaı alıyoruz.
         content = {
             'messages' : self.messages_to_json(messages)
         }
         self.add_messages_from_db(content)
 
     def new_message(self, data):
+        username = data['user']
+        user = User.objects.get(username=username)
+
+        message = data['message']
+
+        mesaj = Message(content=message, author= user)
+        mesaj.save()
         self.send_text_message(data)
 
     ## Burada mesaj db'mizdeki mesajlarımızı; JSON objelerine dönüştürerek geri dönüyoruz.

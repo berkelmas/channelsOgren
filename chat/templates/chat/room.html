@@ -11,6 +11,9 @@
     <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
     <input id="chat-message-input" type="text" size="100"/><br/>
     <input id="chat-message-submit" type="button" value="Send"/>
+
+    <p>{{ request.user }} olarak giriş yaptınız.</p>
+
 </body>
 
 <script src="{% static 'chat/reconnecting-websocket.js' %}"></script>
@@ -67,6 +70,7 @@
         var message = messageInputDom.value;
         chatSocket.send(JSON.stringify({
             'message': message,
+            'user' : '{{ request.user }}',
             'command': 'new_message'
         }));
 
